@@ -1,12 +1,15 @@
 <template>
   <div id="app">
+    <div id="nav">
+      <router-link v-if="authenticated" to="/login" v-on:click.native="logout()" replace>Logout</router-link>
+    </div>
+    <router-view @authenticated="setAuthenticated" />
     <div>
       <div>
         <h1 class="postQuery">AskAnon</h1>
         <input v-model="newQuery" type="text" placeholder="Type the query..." />
         <button class="QPbutton" @click="postQuery()">Post Query</button>
       </div>
-
       <div>
         <Question
           v-for="(question, i) in questions"
@@ -38,12 +41,28 @@ export default {
   name: "App",
   data: function () {
     return {
+      authenticated: false,
+      mockAccount: {
+        username: "nraboy",
+        password: "password"
+      },
       questions: [],
       newQuery: "",
       newID: "",
     };
   },
+  mounted () {
+    if (!this.authenticated) {
+      this.$router.replace({ name: "login" });
+    }
+  },
   methods: {
+    setAuthenticated (status) {
+      this.authenticated = status;
+    },
+    logout () {
+      this.authenticated = false;
+    },
     getAllQueries: function () {
       console.log("Getting all queries");
       axios
@@ -68,7 +87,6 @@ export default {
         myid: this.newID,
         answers: [],
       });
-
       axios
         .post(url + ":3000/query/add", {
           question: this.newQuery,
